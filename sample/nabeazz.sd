@@ -1,0 +1,163 @@
+-------------------------------- DATA PREPARATION
+  Cons = _.a.b.f (f(a)(b))
+  B0 = _.n.s.z (n(s)(n(s)(z)))     -- n * 2 + 0
+  B1 = _.n.s.z (s(n(s)(n(s)(z))))  -- n * 2 + 1
+  -- Store: Generates the constant list 'store'.
+  -- store == (_10 ?{ ?\ ?A ?h ?o ?F ?o ?n ?t ?  ?} . ? )
+  Store = _._0
+    [_4 < B0(B0(B1(_0)))]
+    [cLB < _4(Succ)(w)]      -- 123
+    [_6 < B0(B1(B1(_0)))]
+    [cRB < _6(Succ)(w)]      -- 125
+    [_0 < cLB(cRB)] [I < _0(_0)]
+    [Succ < I(Succ)] [B1 < I(B1)] [B0 < I(B0)]
+    [_10 < B0(B1(B0(B1(_0))))]
+    [_163 < B1(B1(B0(B0(_10))))]
+    [cSP < _163(Succ)(cRB)]  -- 32
+    [_4 < I(_4)] [_16 < B0(B0(_4))]
+    [_9 < B1(_4)]
+    [I < _0(_0)] [Succ < I(Succ)]
+    [Succ16 < _16(Succ)]
+    [c0 < Succ16(cSP)]       -- 48
+    [c2 < Succ(Succ(c0))]    -- 50
+    [c9 < _9(Succ)(c0)]      -- 57
+    [c64 < Succ16(c0)]       -- 64
+    [cA < Succ(c64)]         -- 65
+    [Succ6 < _6(Succ)]
+    [cF < Succ6(c64)]        -- 70
+    [c76 < Succ6(cF)]        -- 76
+    [cBS < Succ16(c76)]      -- 92
+    [ch < Succ6(Succ6(cBS))] -- 104
+    [cn < Succ6(ch)]         -- 110
+    [co < Succ(cn)]          -- 111
+    [ct < Succ6(cn)]         -- 116
+    [_0 < ct(co)] [I < _0(_0)] [Cons < I(Cons)]
+    [Cons(_10)(Cons(c0)(Cons(c2)(Cons(c9)(Cons(cLB)(
+      Cons(cBS)(Cons(cA)(Cons(ch)(Cons(co)(Cons(cF)(
+      Cons(co)(Cons(cn)(Cons(ct)(Cons(cSP)(
+      Cons(cRB)(cSP)))))))))))))))]()
+
+-------------------------------- NUMBER PRINTING
+  False = _.t.f (); _0 = False
+  -- NB. False(any) == I
+  store = _(Store(_0))
+  C = _.f.x.y (f(y)(x)) -- C-combinator
+  -- NB. C(I)(True) == Car; C(I)(False) == Cdr
+  True = _(C(False)) -- C acts as Not
+  -- OutNext: "Prints" car of list and returns cdr,
+  --   where "print" means to apply "out".
+  OutNext = _.CI.out.list
+    [c < CI(True)(list)] [out(c)]
+    [CI(False)(list)]()
+  -- ConsNAStat: Creates an NAStat tuple.
+  -- NAStat == (dgt1 dgt2 dgt3 dgt4 . cycl)
+  -- Here dgt1..4 forms the decimal string of the current
+  -- country value, and cycl is the value modulo 3.
+  ConsNAStat = _.dgt1.dgt2.dgt3.dgt4.cycl.f
+    [f(dgt1)(dgt2)(dgt3)(dgt4)(cycl)]()
+  -- InitNAStat: Makes the NAStat for the initial counter
+  -- value, namely zero.
+  InitNAStat = _.Cons
+    [Cadr < Cons(False)(True)]
+    [c0 < Cadr(store)]
+    [ConsNAStat(c0)(c0)(c0)(c0)(c0)]()
+  -- IncNAStat: Makes the NAStat for the incremented counter
+  -- value, and prints the value, possibly surrounded by
+  -- the "aho" tag.
+  IncDigit = _.c0.c9.is9p.dgt
+    [is9p(c9(dgt)(c0)(Succ(dgt)))(dgt)]()
+  IncNAStat = _.c0.c9.dgt1.dgt2.dgt3.dgt4.cycl
+    [IncDigit_ < IncDigit(c0)(c9)]
+    [ndgt4 < IncDigit_(True)(dgt4)]
+    [is9p4 < c9(dgt4)]
+    [ndgt3 < IncDigit_(is9p4)(dgt3)]
+    [t < c9(dgt3)][is9p3 < t(is9p4)(t)]
+    [ndgt2 < IncDigit_(is9p3)(dgt2)]
+    [t < c9(dgt2)][is9p2 < t(is9p3)(t)]
+    [ndgt1 < IncDigit_(is9p2)(dgt1)]
+    [I < False(_E[1])] [Sicc < I(Succ)]
+    [ncycl < (Succ(Succ(c0)))(cycl)(c0)(Succ(cycl))]
+    [ConsNAStat(ndgt1)(ndgt2)(ndgt3)(ndgt4)(ncycl)]()
+  -- IsAho: Tells whether the counter is an 'aho' number.
+  IsAho = _.c0.c3.dgt1.dgt2.dgt3.dgt4.cycl
+    [is3p1 < c3(dgt1)]
+    [t < c3(dgt2)] [is3p2 < t(t)(is3p1)]
+    [t < c3(dgt3)] [is3p3 < t(t)(is3p2)]
+    [t < c3(dgt4)] [is3p4 < t(t)(is3p3)]
+    [t < cycl(c0)] [t(t)(is3p4)]()
+  PrintNAStat = _.I.c0.dgt1.dgt2.dgt3.dgt4.cycl
+    [Out < I(Out)] 
+    [is0d1 < c0(dgt1)]
+    [is0d1(c0)(Out)(dgt1)]
+    [is0d2 < c0(dgt2)] [is0p2 < is0d2(is0d1)(is0d2)]
+    [is0p2(c0)(Out)(dgt2)]
+    [is0d3 < c0(dgt3)] [is0p3 < is0d3(is0p2)(is0d3)]
+    [is0p3(c0)(Out)(dgt3)]
+    [Out(dgt4)](I(Out))
+  StepNAStat = _.CI.nast
+    [Car < CI(True)] [Cdr < CI(False)]
+    [_10 < Car(store)] [q11 < Cdr(store)]
+    [c0 < Car(q11)] [q12 < Cdr(q11)]
+    [c2 < Car(q12)] [q13 < Cdr(q12)]
+    [c9 < Car(q13)] [tagStr < Cdr(q13)]
+    [nnast < nast(IncNAStat(c0)(c9))]
+    [c3 < Succ(c2)]
+    [isaho < nnast(IsAho(c0)(c3))]
+    [Outx < isaho(Out)(isaho)]
+    [OutNext_ < OutNext(CI)(Outx)]
+    [q21 < _10(OutNext_)(tagStr)]
+    [I < False(_E[1])]
+    [Out < nnast(PrintNAStat(I)(c0))]
+    [cSP < OutNext_(q21)] [Out(cSP)]
+    [I(nnast)]()
+
+-------------------------------- NUMBER INPUT
+  Inc = _.n.s.z (n(s)(s(z)))
+  -- NIDStep: Auxiliary procedure for NIDigit.
+  -- DDStat ==  (i cck . cin)
+  NIDStep = _.CI.ddst
+    [Car < CI(True)] [Cdr < CI(False)]
+    [i < Car(ddst)] [q11 < Cdr(ddst)]
+    [cck < Car(q11)] [cin < Cdr(q11)]
+    [cck_cin_w < cck(cin)(w)] [cck_ < cck_cin_w(Succ(cck))]
+    [cin_ < cck_cin_w(cin)]
+    [i_ < cck_(w)(i)(Inc(i))]
+    [Cons(i_)(Cons(cck_)(cin_))]()
+  Mult = _.m.n.s (m(n(s)))
+  -- NIDigit: Inspects the read digit cin and gets the new value
+  -- of n. Returns a DLStat.
+  -- DLStat == (stop . n)
+  NIDigit = _.CI._10.c0.stop.n.cin
+    [Car < CI(True)] [Cdr < CI(False)]
+    [ddst0 < Cons(_0)(Cons(c0)(cin))]
+    [ddst1 < (stop(_0)(_10))(NIDStep(CI))(ddst0)]
+    [d < Car(ddst1)] [cck < Car(Cdr(ddst1))]
+    [stop_ < C(cck(w))]
+    [n_ < stop_(n)(d(Inc)(Mult(_10)(n)))]
+    [Cons(stop_)(n_)]()
+  -- NIStep: Reads a character from stdin and calls NIDigit.
+  -- Auxiliary procedure for NumIn.
+  NIStep = _.CI.dlst
+    [Car < CI(True)] [Cdr < CI(False)]
+    [_10 < Car(store)] [q21 < Cdr(store)]
+    [c0 < Car(q21)] -- [c58 < Cdr(q21)]
+    [NIDigit_ < NIDigit(CI)(_10)(c0)]
+    [stop < Car(dlst)] [n < Cdr(dlst)]
+    [cin < (stop(False(_E[1]))(In))(w)]
+    [NIDigit_(stop)(n)(cin)]()
+  -- NumIn: Reads a number (digit sequence) from stdin and
+  -- returns the number.
+  NumIn = _.CI
+    [dlst0 < Cons(False)(_0)]
+    [NIStep_ < NIStep(CI)]
+    [dlst1 < NIStep_(NIStep_(NIStep_(NIStep_(dlst0))))]
+    [Cdr < CI(False)] [n < Cdr(dlst1)]()
+
+-------------------------------- MAIN PROCEDURE
+  Main = _.self
+    [I < False(_E[1])] [CI < C(I)]
+    [n < NumIn(CI)]
+    [nast < InitNAStat(Cons)]
+    [StepNAStat_ < StepNAStat(CI)]
+    [n(StepNAStat_)(nast)]()
+-------------------------------- END

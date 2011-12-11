@@ -1,0 +1,41 @@
+--
+-- This program reads a line of string from stdin
+-- and prints to stdout the reversed string.
+--
+-------------------- Prepare a newline character
+  _2 = _.s.z (s(s(z)))
+  _3 = _.s.z (s(s(s(z))))
+  GetNL = _.w
+    [c121 < _2(Succ)(w)]
+    [_8 < _3(_2)] [_64 < _2(_8)]
+    [c185 < _64(Succ)(c121)]
+    [_81 < _2(_2)(_3)]
+    [cNL < _81(Succ)(c185)]()
+  cNL = _(GetNL(w))
+-------------------- Read characters
+  Cons = _.a.b.f (f(a)(b))
+  C = _.f.x.y (f(y)(x))
+  False = _.x.y ()
+  True = _(C(False)); K = True
+  ReadOne = _.stor
+    [cin < In(cNL)] [quit < cin(cNL)]
+    [nstor < (quit)(stor)(Cons(cin)(stor))]
+    [Cons(quit)(nstor)]()
+  ReadStep = _.self.stor
+    [I < False(w)] [CI < C(I)]
+    [Car < CI(True)] [Cdr < CI(False)]
+    [res < ReadOne(stor)]
+    [quit < Car(res)] [nstor < Cdr(res)]
+    [(quit)(I)(self(self))(nstor)]()
+-------------------- Write characters
+  WriteStep = _.self.stor
+    [I < False(w)] [CI < C(I)]
+    [Car < CI(True)] [Cdr < CI(False)]
+    [c < Car(stor)] [Out(c)]
+    [quit < c(cNL)]
+    [(quit)(K(I))(self(self))(Cdr(stor))]()
+-------------------- Main procedure
+  Main = _.self
+   [stor0 < Cons(cNL)(False)]
+   [stor < ReadStep(ReadStep)(stor0)]
+   [WriteStep(WriteStep)(stor)]()

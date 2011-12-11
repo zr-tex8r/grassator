@@ -1,0 +1,11 @@
+-- "Calculate 1 + 1"
+-- A sample program presented at the site of Grass
+-- (http://www.blue.sky.or.jp/grass/).
+_1 = _.s.z (s(z))
+Plus = _.m.n.s.z [t < n(s)(z)] (m(s)(t))
+_.self [_2 < Plus(_1)(_1)] (_2(Out)(w))
+--[[
+0001: Abs(2, [App(2,1)])
+0002: Abs(4, [App(3,2), App(1,2), App(6,4), App(1,2)])
+0003: Abs(1, [App(2,3), App(1,4), App(1,6), App(1,9)])
+]]
