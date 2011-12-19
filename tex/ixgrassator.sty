@@ -1,0 +1,160 @@
+%
+% ixgrassator.sty: Grass environment in LaTeX
+%
+
+%% package declaration
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{ixgrassator}
+
+%% preparations
+\def\ixgs@pkgname{ixgrassator}
+\def\ixgs@error{\PackageError\ixgs@pkgname}
+\RequirePackage{luatexbase}
+\RequireLuaModule{ixgrassator}
+
+%--------------------------------------- LaTeX interface
+% This package requires LuaTeX for the obvious reason it need to
+% execute Lua codes, but for some reason the TeX code is written
+% in such a way LuaTeX extension is otherwise not required.
+
+%% variables
+\newcount\bxgs@proc@maxid
+
+%% \ixgs@string{<text>}
+\def\ixgs@string#1{"\luatexluaescapestring{#1}"}
+
+%% \ixgs@declare@grab\CS{<env>}
+% Makes \CS a macro to grab the content of the environment.
+\begingroup
+\catcode `|=0 \catcode `[= 1 \catcode`]=2
+\catcode `\{=12 \catcode `\}=12 \catcode`\\=12 
+|gdef|ixgs@declare@grab#1#2[%
+  |def#1##1\end{#2}[%
+    |ixgs@do[##1]|end[#2]%
+  ]%
+]
+|endgroup
+
+%% \ixgs@enter{<env>}
+% Process in entering the environment.
+\def\ixgs@enter#1{%
+  \ixgs@declare@grab\ixgs@grab{#1}%
+  \def\ixgs@proc@id{0}%
+  \if i\ixgs@decl@mode
+    \let\ixgs@next\ixgs@enter@winput
+  \else\if p\ixgs@decl@mode
+    \advance\ixgs@proc@maxid\@ne
+    \edef\ixgs@proc@id{\the\ixgs@proc@maxid}%
+    \let\ixgs@next\ixgs@enter@wproc
+  \else
+    \let\ixgs@input\@empty
+    \let\ixgs@next\ixgs@enter@a
+  \fi\fi
+  \ixgs@next
+}
+\def\ixgs@enter@a{%
+  % Here \ixgs@proc@id is the fresh id value for the given program
+  % (zero in the case of immediate execution), and \ixgs@input is
+  % the input string.
+  \let\ixgs@do\ixgs@enter@b
+  \begingroup
+    \let\do\@makeother \dospecials \do\^^M%
+    \ixgs@grab
+}
+\def\ixgs@enter@b#1{% <prog>
+    \gdef\ixgs@gtempa{#1}%
+  \endgroup
+  \let\ixgs@program\ixgs@gtempa
+  \ixgs@register@proc
+}
+\def\ixgs@enter@winput#1{% <input>
+  \def\ixgs@input{#1}%
+  \ixgs@enter@a
+}
+\def\ixgs@enter@wproc#1{% \ProcCS
+  \def\ixgs@proc@cs{\noexpand#1}%
+  \ixgs@enter@a
+}
+
+%% \ixgs@register@proc{<id>}{<lang>}{<outverb>}{<source>}
+% Places a program into the process registry. It parses the given
+% source string and stores the result in \ixgs@PrArray/<id>.
+% The outverb value is stored in \ixgs@OutVerb/<id>.
+\def\ixgs@register@proc{%
+  \edef\ixgs@tempa{{\ixgs@proc@id}{\ixgs@lang}%
+    {\the\ixgs@out@verbatim}{\ixgs@program}}%
+  \expandafter\ixgs@register@proc@a\ixgs@tempa
+}
+\def\ixgs@register@proc@a#1#2#3#4{%
+  \directlua{
+     ixgrassator.register(\ixgs@string{#1}, \ixgs@string{#2},
+       \ixgs@string{#3}, \ixgs@string{#4})
+  }%
+}
+
+%% \ixgs@leave
+% Process in leaving the environment.
+\def\ixgs@leave{%
+  \ifnum\ixgs@proc@id>0 % process registration
+    \edef\ixgs@next{%
+      % Define the given \ProcCS to be a macro to invoke the process.
+      % (NB. \ixgs@proc@cs expands to \noexpand\ProcCS.)
+      \gdef\ixgs@proc@cs{\noexpand\ixgs@invoke@proc{\ixgs@proc@id}}%
+    }%
+    \ixgs@next
+  \else % immediate execution
+    \ixgs@invoke@proc{\ixgs@proc@id}{\ixgs@input}%
+  \fi
+}
+
+%% \ixgs@invoke@proc{<id>}{<input>}
+\def\ixgs@invoke@proc#1#2{%
+  \ixgs@stringify\ixgs@instr{#2}%
+  \directlua{
+    ixgrassator.invoke(\ixgs@string{#1}, \ixgs@string\ixgs@instr)
+  }%
+}
+
+%% \ixgs@stringify\CS{<text>}
+% Defines \CS to be <text> turned into a plain string.
+\def\ixgs@stringify#1#2{%
+  \edef\ixgs@tempa{#2}%
+  \expandafter\ixgs@stringify@a\meaning\ixgs@tempa\ixgs@end#1%
+}
+\def\ixgs@stringify@a#1->#2\ixgs@end#3{%
+  \def#3{#2}%
+}
+
+%%<+> \GRDeclareLangEnvironment{<lang>}
+% Defines a series of environments for a language.
+\def\GRDeclareLangEnvironment#1{%
+  \ixgs@declare@environ{exec#1}{#1}{n}{0}%
+  \ixgs@declare@environ{exec#1*}{#1}{n}{1}%
+  \ixgs@declare@environ{exec#1withinput}{#1}{i}{0}%
+  \ixgs@declare@environ{exec#1withinput*}{#1}{i}{1}%
+  \ixgs@declare@environ{proc#1}{#1}{p}{0}%
+  \ixgs@declare@environ{proc#1*}{#1}{p}{1}%
+}
+\def\ixgs@declare@environ#1#2#3#4{%
+  % {<env>}{<lang>}{<decl_mode>}{<out_verb>}
+  % decl_mode: n=w/o input; i=w/ input; p=make process
+  \edef\ixgs@tempa{{#1}{#2}{#3}{#4}}%
+  \expandafter\ixgs@declare@environ@a\ixgs@tempa
+}
+\def\ixgs@declare@environ@a#1#2#3#4{%
+  \@namedef{#1}{%
+    \let\ixgs@decl@mode=#3%
+    \chardef\ixgs@out@verbatim=#4%
+    \def\ixgs@lang{#2}%
+    \ixgs@enter{#1}%
+  }%
+  \@namedef{end#1}{\ixgs@leave}%
+}
+
+%% predefined languages
+\GRDeclareLangEnvironment{grass}
+\GRDeclareLangEnvironment{homuhomu}
+\GRDeclareLangEnvironment{seed}
+
+%--------------------------------------- all done
+\endinput
