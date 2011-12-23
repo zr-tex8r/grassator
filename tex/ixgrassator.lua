@@ -3,8 +3,8 @@
 --
 luatexbase.provides_module({
   name = 'ixgrassator',
-  date = '2011/12/12',
-  version = '0.2.2',
+  date = '2011/12/23',
+  version = '0.2.3',
   description = 'Grass environment in LaTeX',
 })
 require 'bushfire'
@@ -73,11 +73,13 @@ do
     return bushfire.mower.last_pass(chunk)
   end)
 
+  --[[
   bushfire.register_from_source('seed', function(source)
     local t1 = planter.from_source('seed', source)
     local t2 = t1:grass_source()
     return bushfire.parse_grass(t2)
   end)
+  ]]
 end
 ---------------------------------------- module main
 do

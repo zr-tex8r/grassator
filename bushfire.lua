@@ -7,7 +7,7 @@
 module(..., package.seeall)
 
 local sys, sys_proto
-mower = nil  -- is global
+gio, mower = nil -- is global
 
 ---------------------------------------- module main
 
@@ -309,6 +309,16 @@ do
   end
 
 end
+---------------------------------------- object 'gio'
+do
+  gio = {}
+  function gio.read()
+    return io.read(1)
+  end
+  function gio.write(c)
+    return io.write(c)
+  end
+end
 ---------------------------------------- values
 do
   local true_term, false_term
@@ -369,7 +379,7 @@ do
   out = setmetatable({
     _class = 'out',
     app = function(self, char)
-      io.write(string.char(char:char()))
+      gio.write(string.char(char:char()))
       return char
     end
   }, meta)
@@ -377,7 +387,7 @@ do
   in_ = setmetatable({
     _class = 'in',
     app = function(self, char)
-      local r = io.read(1)
+      local r = gio.read()
       return (r) and make_char(r:byte()) or char
     end
   }, meta)

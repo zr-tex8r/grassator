@@ -4,7 +4,7 @@
 
 %% package declaration
 \NeedsTeXFormat{LaTeX2e}
-\ProvidesPackage{ixgrassator}
+\ProvidesPackage{ixgrassator}[2011/12/23 v0.2.3]
 
 %% preparations
 \def\ixgs@pkgname{ixgrassator}
@@ -18,7 +18,7 @@
 % in such a way LuaTeX extension is otherwise not required.
 
 %% variables
-\newcount\bxgs@proc@maxid
+\newcount\ixgs@proc@maxid
 
 %% \ixgs@string{<text>}
 \def\ixgs@string#1{"\luatexluaescapestring{#1}"}
@@ -154,7 +154,7 @@
 %% predefined languages
 \GRDeclareLangEnvironment{grass}
 \GRDeclareLangEnvironment{homuhomu}
-\GRDeclareLangEnvironment{seed}
+%\GRDeclareLangEnvironment{seed}
 
 %--------------------------------------- all done
 \endinput
