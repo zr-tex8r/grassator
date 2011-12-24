@@ -1,0 +1,195 @@
+%
+% bxgrassator.sty: Grass environment in LaTeX
+%
+
+%% package declaration
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{bxgrassator}
+
+%% preparations
+\def\bxgs@pkgname{bxgrassator}
+\def\bxgsError#1{%
+  \PackageError\bxgs@pkgname{#1}\@ehc
+}
+
+\input{bxgrassator.def}
+
+%--------------------------------------- \scantokens emulation
+\ifx\scantokens\@undefined
+  % when \scantokens is unavailable
+  \newwrite\bxgs@tempfile
+  \def\bxgs@tempfilename{\bxgs@pkgname.out}
+
+  \def\bxgs@scantokens#1{%
+    \begingroup
+      \toks@={#1}%
+      \immediate\openout\bxgs@tempfile=\bxgs@tempfilename\relax
+      \immediate\write\bxgs@tempfile{\the\toks@}%
+      \immediate\closeout\bxgs@tempfile
+    \endgroup
+    \input{\bxgs@tempfilename}%
+  }%
+
+\else
+  % uses \scantokens if available
+  \let\bxgs@scantokens\scantokens
+\fi
+%--------------------------------------- LaTeX interface
+%% variables
+\newcount\bxgs@proc@maxid
+
+%% \bxgs@declare@grab\CS{<env>}
+% Makes \CS a macro to grab the content of the environment.
+\begingroup
+\catcode `|=0 \catcode `[= 1 \catcode`]=2
+\catcode `\{=12 \catcode `\}=12 \catcode`\\=12 
+|gdef|bxgs@declare@grab#1#2[%
+  |def#1##1\end{#2}[%
+    |bxgs@do[##1]|end[#2]%
+  ]%
+]
+|endgroup
+
+%% \bxgs@enter{<env>}
+% Process in entering the environment.
+\def\bxgs@enter#1{%
+  \bxgs@declare@grab\bxgs@grab{#1}%
+  \def\bxgs@proc@id{0}%
+  \if i\bxgs@decl@mode
+    \let\bxgs@next\bxgs@enter@winput
+  \else\if p\bxgs@decl@mode
+    \advance\bxgs@proc@maxid\@ne
+    \edef\bxgs@proc@id{\the\bxgs@proc@maxid}%
+    \let\bxgs@next\bxgs@enter@wproc
+  \else
+    \let\bxgs@input\@empty
+    \let\bxgs@next\bxgs@enter@a
+  \fi\fi
+  \bxgs@next
+}
+\def\bxgs@enter@a{%
+  % Here \bxgs@proc@id is the fresh id value for the given program
+  % (zero in the case of immediate execution), and \bxgs@input is
+  % the input string.
+  \let\bxgs@do\bxgs@enter@b
+  \begingroup
+    \let\do\@makeother \dospecials \do\^^M%
+    \bxgs@grab
+}
+\def\bxgs@enter@b#1{% <prog>
+    \gdef\bxgs@gtempa{#1}%
+  \endgroup
+  \let\bxgs@program\bxgs@gtempa
+  \bxgs@register@proc
+}
+\def\bxgs@enter@winput#1{% <input>
+  \def\bxgs@input{#1}%
+  \bxgs@enter@a
+}
+\def\bxgs@enter@wproc#1{% \ProcCS
+  \def\bxgs@proc@cs{\noexpand#1}%
+  \bxgs@enter@a
+}
+
+%% \bxgs@register@proc{<id>}{<lang>}{<outverb>}{<source>}
+% Places a program into the process registry. It parses the given
+% source string and stores the result in \bxgs@PrArray/<id>.
+% The outverb value is stored in \bxgs@OutVerb/<id>.
+\def\bxgs@register@proc{%
+  \edef\bxgs@tempa{{\bxgs@proc@id}{\bxgs@lang}%
+    {\the\bxgs@out@verbatim}{\bxgs@program}}%
+  \expandafter\bxgs@register@proc@a\bxgs@tempa
+}
+\def\bxgs@register@proc@a#1#2#3#4{%
+  \begingroup
+    \expandafter\gdef\csname bxgs@OutVerb/#1\endcsname{#3}%
+    \bxgsParse{#2}{#4}%
+    \global\expandafter\let\csname bxgs@PrArray/#1\endcsname
+     \bxgsProgArray
+  \endgroup
+}
+
+%% \bxgs@leave
+% Process in leaving the environment.
+\def\bxgs@leave{%
+  \ifnum\bxgs@proc@id>0 % process registration
+    \edef\bxgs@next{%
+      % Define the given \ProcCS to be a macro to invoke the process.
+      % (NB. \bxgs@proc@cs expands to \noexpand\ProcCS.)
+      \gdef\bxgs@proc@cs{\noexpand\bxgs@invoke@proc{\bxgs@proc@id}}%
+    }%
+    \bxgs@next
+  \else % immediate execution
+    \bxgs@invoke@proc{\bxgs@proc@id}{\bxgs@input}%
+  \fi
+}
+
+%% \bxgs@invoke@proc{<id>}{<input>}
+\def\bxgs@invoke@proc#1#2{%
+  \begingroup
+    \bxgs@stringify\bxgsInput{#2}%
+    \expandafter\let\expandafter\bxgsProgArray
+     \csname bxgs@PrArray/#1\endcsname
+    \bxgsInvoke
+    \xdef\bxgs@gtempa{\noexpand\bxgs@process@str
+      {\csname bxgs@OutVerb/#1\endcsname}{\bxgsOutput}}%
+  \endgroup
+  \bxgs@gtempa
+}
+\def\bxgs@process@str#1#2{%
+  \ifnum#1>\z@
+    \begingroup
+      \let\bxgsLF\newline \let\bxgsSP\ %
+      #2\relax
+    \endgroup
+  \else
+    \begingroup
+      \def\bxgsLF{^^J}\def\bxgsSP{ }%
+      \xdef\bxgs@gtempa{\noexpand\bxgs@scantokens{#2}}%
+    \endgroup
+    \bxgs@gtempa
+  \fi
+}
+
+%% \bxgs@stringify\CS{<text>}
+% Defines \CS to be <text> turned into a plain string.
+\def\bxgs@stringify#1#2{%
+  \edef\bxgs@tempa{#2}%
+  \expandafter\bxgs@stringify@a\meaning\bxgs@tempa\bxgs@end#1%
+}
+\def\bxgs@stringify@a#1->#2\bxgs@end#3{%
+  \def#3{#2}%
+}
+
+%%<+> \GRDeclareLangEnvironment{<lang>}
+% Defines a series of environments for a language.
+\def\GRDeclareLangEnvironment#1{%
+  \bxgs@declare@environ{exec#1}{#1}{n}{0}%
+  \bxgs@declare@environ{exec#1*}{#1}{n}{1}%
+  \bxgs@declare@environ{exec#1withinput}{#1}{i}{0}%
+  \bxgs@declare@environ{exec#1withinput*}{#1}{i}{1}%
+  \bxgs@declare@environ{proc#1}{#1}{p}{0}%
+  \bxgs@declare@environ{proc#1*}{#1}{p}{1}%
+}
+\def\bxgs@declare@environ#1#2#3#4{%
+  % {<env>}{<lang>}{<decl_mode>}{<out_verb>}
+  % decl_mode: n=w/o input; i=w/ input; p=make process
+  \edef\bxgs@tempa{{#1}{#2}{#3}{#4}}%
+  \expandafter\bxgs@declare@environ@a\bxgs@tempa
+}
+\def\bxgs@declare@environ@a#1#2#3#4{%
+  \@namedef{#1}{%
+    \let\bxgs@decl@mode=#3%
+    \chardef\bxgs@out@verbatim=#4%
+    \def\bxgs@lang{#2}%
+    \bxgs@enter{#1}%
+  }%
+  \@namedef{end#1}{\bxgs@leave}%
+}
+
+%% predefined languages
+\GRDeclareLangEnvironment{grass}
+\GRDeclareLangEnvironment{homuhomu}
+
+%--------------------------------------- all done
+\endinput
