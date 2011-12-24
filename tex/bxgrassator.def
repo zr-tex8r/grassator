@@ -45,9 +45,6 @@
 % A uniqeu token.
 \def\bxgs@end{\noexpand\bxgs@END}
 
-%% \bxgs@exec@escape
-\def\bxgs@exec@escape{\typeout{SHRRRRRRRN!}}
-
 %--------------------------------------- protection mechanism
 
 %% \bxgs@protect\CS
@@ -604,3 +601,4 @@
 
 %--------------------------------------- all done
 \endinput
+% EOF
