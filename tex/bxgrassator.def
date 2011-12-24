@@ -1,6 +1,8 @@
 %
-% bxgrassator.def:
+% bxgrassator.def: Grass interpreter core
 %
+% This module is valid for any plain-compatible format and
+% any TeX-derivative engine.
 %--------------------------------------- variables, helpers
 %\let\bxgsUseDebug=t
 %%
