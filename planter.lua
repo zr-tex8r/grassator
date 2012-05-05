@@ -3,7 +3,8 @@
 -- Module 'planter' : converter for auxiliary languages for Grass
 --
 -- Author: Takayuki YATO (aka 'ZR')
-module(..., package.seeall)
+
+local M = {}
 
 local debug_mode = false
 local initial_var = { 'In', 'w', 'Succ', 'Out' }
@@ -41,28 +42,28 @@ local function xtype(o)
   end
 end
 
-function compile(desc)
+local function compile(desc)
   local lsys = sys.new()
   lsys:stagify(desc)
   desc()
   return lsys:finalize()
 end
 
-function from_array(list)
+local function from_array(list)
   local prog = program.from_array(list)
   prog:validate()
   return prog
 end
 
-function from_source(lang, source)
+local function from_source(lang, source)
   return program.from_source(lang, source)
 end
 
-function register_from_source(lang, proc)
+local function register_from_source(lang, proc)
   program.proc_from_source[lang] = proc
 end
 
-function register_to_source(lang, proc)
+local function register_to_source(lang, proc)
   program.proc_to_source[lang] = proc
 end
 
@@ -620,4 +621,11 @@ do
 
 end
 
+---------------------------------------- export
+M.compile = compile
+M.from_array = from_array
+M.from_source = from_source
+M.register_from_source = register_from_source
+M.register_to_source = register_to_source
+return M
 -- EOF
