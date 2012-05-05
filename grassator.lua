@@ -7,8 +7,8 @@ local version = "v0.2.3"
 local mod_date = "2011/12/23"
 local author = "ZR(T.Yato)"
 package.path = arg[0]:gsub("%w+%.lua$", "?.lua;")..package.path
-require 'planter'
-require 'bushfire'
+planter = require 'planter'
+bushfire = require 'bushfire'
 
 from_lang, to_lang = nil, nil
 exec_mode, out_sjis = false, false

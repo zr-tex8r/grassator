@@ -4,10 +4,10 @@
 --
 -- Author: Takayuki YATO (aka 'ZR')
 
-module(..., package.seeall)
-
+local M = {}
 local sys, sys_proto
-gio, mower = nil -- is global
+local gio_std, mower
+local make_char, char_w, succ, out, in_, make_term
 
 ---------------------------------------- module main
 
@@ -31,19 +31,19 @@ local function log_(format, ...)
 end
 
 local log, debug_used
-function use_debug(value)
+local function use_debug(value)
   debug_used = value and true
   log = debug_used and log_ or log_na
 end
 
 local stat_used
-function use_stat(value)
+local function use_stat(value)
   local p = sys_proto
   stat_used = value and true
   p._set_level = value and p._set_level_ or p._set_level_na
 end
 
-function use_quick(value)
+local function use_quick(value)
   local p = sys_proto
   p._enter_local = value and p._enter_local_q or
     p._enter_local_nq
@@ -51,11 +51,11 @@ end
 
 local proc_from_source = {}
 
-function register_from_source(lang, proc)
+local function register_from_source(lang, proc)
   proc_from_source[lang] = proc
 end
 
-function parse(lang, source)
+local function parse(lang, source)
   local proc = proc_from_source[lang]
   if proc == nil then
     error("unknown language '"..lang.."'")
@@ -63,27 +63,27 @@ function parse(lang, source)
   return proc(source)
 end
 
-function parse_grass(source)
-  return mower.parse(source)
+local function parse_grass(source)
+  return M.mower.parse(source)
 end
 register_from_source('grass', parse_grass)
 
-function run_array(list)
+local function run_array(list)
   local sys = sys.new(list)
   local ret = sys:run()
   sys:show_stat()
   return ret
 end
 
-function run(lang, source)
+local function run(lang, source)
   return run_array(parse(lang, source))
 end
 
-function run_grass(source)
-  return run_array(mower.parse(source))
+local function run_grass(source)
+  return run_array(M.mower.parse(source))
 end
 
----------------------------------------- class 'sys'
+---------------------------------------- inner class 'sys'
 do
   sys = {}
   local proto = {}; sys_proto = proto
@@ -309,13 +309,13 @@ do
   end
 
 end
----------------------------------------- object 'gio'
+---------------------------------------- object 'bushfire.gio_std'
 do
-  gio = {}
-  function gio.read()
+  gio_std = {}; local p = gio_std
+  function p.read()
     return io.read(1)
   end
-  function gio.write(c)
+  function p.write(c)
     return io.write(c)
   end
 end
@@ -379,7 +379,7 @@ do
   out = setmetatable({
     _class = 'out',
     app = function(self, char)
-      gio.write(string.char(char:char()))
+      M.gio.write(string.char(char:char()))
       return char
     end
   }, meta)
@@ -387,7 +387,7 @@ do
   in_ = setmetatable({
     _class = 'in',
     app = function(self, char)
-      local r = gio.read()
+      local r = M.gio.read()
       return (r) and make_char(r:byte()) or char
     end
   }, meta)
@@ -427,7 +427,7 @@ do
   })
 
 end
----------------------------------------- class 'mower'
+---------------------------------------- class 'bushfire.mower'
 do
   mower = {}; local p = mower
 
@@ -501,4 +501,18 @@ end
 use_debug(false)
 use_stat(false)
 use_quick(true)
+---------------------------------------- export
+M.use_debug = use_debug
+M.use_stat = use_stat
+M.use_quick = use_quick
+M.register_from_source = register_from_source
+M.parse = parse
+M.parse_grass = parse_grass
+M.run_array = run_array
+M.run = run
+M.run_grass = run_grass
+M.gio_std = gio_std
+M.gio = gio_std
+M.mower = mower
+return M
 -- EOF

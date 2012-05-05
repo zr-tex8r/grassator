@@ -7,7 +7,7 @@ luatexbase.provides_module({
   version = '0.2.3',
   description = 'Grass environment in LaTeX',
 })
-require 'bushfire'
+bushfire = require 'bushfire'
 module(..., package.seeall)
 -- local err, warn, info, log = luatexbase.errwarinf(_NAME)
 local gio = bushfire.gio
