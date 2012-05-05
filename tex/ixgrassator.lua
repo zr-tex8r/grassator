@@ -3,8 +3,8 @@
 --
 luatexbase.provides_module({
   name = 'ixgrassator',
-  date = '2011/12/23',
-  version = '0.2.3',
+  date = '2012/05/06',
+  version = '0.3.0',
   description = 'Grass environment in LaTeX',
 })
 bushfire = require 'bushfire'

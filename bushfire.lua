@@ -3,6 +3,7 @@
 -- Module 'bushfire' : interpreter for the Grass language
 --
 -- Author: Takayuki YATO (aka 'ZR')
+-- Last modified: 2012/05/06
 
 local M = {}
 local sys, sys_proto

@@ -3,6 +3,9 @@
 %
 % This module is valid for any plain-compatible format and
 % any TeX-derivative engine.
+%
+% Author: Takayuki YATO (aka 'ZR')
+% Last modified: 2012/05/06
 %--------------------------------------- variables, helpers
 %\let\bxgsUseDebug=t
 %%
@@ -339,14 +342,12 @@
   \bxgs@call@b#1\bxgs@end
 }
 \def\bxgs@call@b#1#2#3#4#5{% {<pc>}...{<glast>}|{<val1>}...\bxgs@end
-%\def\aqq{{#1}{#2}{#3}{#4}{#5}}\show\aqq
   \let\bxgs@env\bxgs@env@local
   \bxgs@pc=#1\relax \def\bxgs@epc{#2}%
   \bxgs@last=#4\relax \def\bxgs@glast{#5}%
   \bxgs@j=#5\relax \bxgs@call@c
 }
 \def\bxgs@call@c#1{% {<val1>}|{<val2>}...\bxgs@end
-%\def\arq{#1}\show\arq
   \ifx\bxgs@end#1%
     \expandafter\bxgs@local@run
   \else

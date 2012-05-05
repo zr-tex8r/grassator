@@ -3,6 +3,7 @@
 -- Module 'planter' : converter for auxiliary languages for Grass
 --
 -- Author: Takayuki YATO (aka 'ZR')
+-- Last modified: 2012/05/06
 
 local M = {}
 
@@ -11,6 +12,7 @@ local initial_var = { 'In', 'w', 'Succ', 'Out' }
 
 local sys, exphndl, exp_app, term_inter, term_env
 local asg_inter, code_app, code_abs, program
+local change_env
 
 ---------------------------------------- module main
 
@@ -67,6 +69,33 @@ local function register_to_source(lang, proc)
   program.proc_to_source[lang] = proc
 end
 
+---------------------------------------- 'change_env'
+if setfenv then  ---- Lua 5.1
+
+  function change_env(fun, env)
+    setfenv(fun, env)
+  end
+
+else             ---- Lua 5.2
+  local debug = require "debug"
+
+  local function fresh_upvalue(val)
+    local upval = val
+    return function() return upval end
+  end
+
+  function change_env(fun, env)
+    local idx, name, val = 0
+    while true do
+      idx = idx + 1
+      name = debug.getupvalue(fun, idx)
+      if not name then return end
+      val = (name == '_ENV') and env or env[name]
+      debug.upvaluejoin(fun, idx, fresh_upvalue(val), 1)
+    end
+  end
+
+end
 ---------------------------------------- class 'exphndl'
 do
   exphndl = {}
@@ -395,9 +424,6 @@ do
   end
 
   function proto:stagify(fun)
-    if self.orig_fenv ~= nil then
-      error("stagify already called", 2)
-    end
     local stg_meta = {
       __index = function (_, index)
         return exphndl.new(index)
@@ -413,23 +439,14 @@ do
     }
     setmetatable(stg_fenv, stg_meta)
     self.stage_fun = fun
-    self.orig_fenv = getfenv(fun)
-    setfenv(fun, stg_fenv)
+    change_env(fun, stg_fenv)
   end
 
   function proto:finalize()
     local prog = program.new(self.code)
     prog:log_dump()
-    self:_unstagify()
     prog:validate()
     return prog
-  end
-
-  function proto:_unstagify()
-    if self.stage_fun == nil then
-      error("stagify not yet called", 2)
-    end
-    setfenv(self.stage_fun, self.orig_fenv)
   end
 
   function proto:_reset_stmt()

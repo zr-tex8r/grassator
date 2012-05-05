@@ -18,7 +18,7 @@ Installation
 ------------
 
 This package requires that you have a working environment
-of Lua 5.1.
+of Lua 5.1 or 5.2.
 It consists of three files:
 
   * grassator.lua: The main (executable) script.
