@@ -57,16 +57,15 @@ local function from_array(list)
   return prog
 end
 
-local function from_source(lang, source)
-  return program.from_source(lang, source)
+local loadstring = loadstring or load
+local function from_seed(source)
+  return compile(assert(loadstring(source)))
 end
 
-local function register_from_source(lang, proc)
-  program.proc_from_source[lang] = proc
-end
-
-local function register_to_source(lang, proc)
-  program.proc_to_source[lang] = proc
+local function abolished(name)
+  return function()
+    error("function '"..name.."' is abolisehd")
+  end
 end
 
 ---------------------------------------- 'change_env'
@@ -223,8 +222,6 @@ end
 do
   program = {}
   local proto = {}
-  program.proc_from_source = {}
-  program.proc_to_source = {}
 
   function program.new(code)
     local function strvalue()
@@ -279,39 +276,7 @@ do
     log("validate ok")
   end
 
-  function proto:to_source(lang)
-    if lang == "grass" then
-      return self:grass_source()
-    end
-    local proc = program.proc_to_source[lang]
-    if proc == nil then
-      error("unknown language '"..lang.."'", 2)
-    end
-    self:validate()
-    local source = proc(self)
-    if source == nil then
-      error("failure in source generation", 2)
-    end
-    return source
-  end
-
-  function program.from_source(lang, source)
-    if lang == "seed" then
-      local desc = assert(loadstring(source))
-      return compile(desc)
-    end
-    local proc = program.proc_from_source[lang]
-    if proc == nil then
-      error("unknown language '"..lang.."'", 2)
-    end
-    local array = proc(source)
-    if type(array) ~= "table" then
-      error("failure in compilation", 2)
-    end
-    local prog = program.from_array(array)
-    prog:validate()
-    return prog
-  end
+  proto.to_source = abolished('to_source')
 
   function proto:grass_source()
     local chunk = {}
@@ -340,6 +305,7 @@ do
     end
     return table.concat(chunk)
   end
+  proto.to_grass = proto.grass_source
 
   function program.from_array(list)
     if type(list) ~= "table" then
@@ -639,10 +605,11 @@ do
 end
 
 ---------------------------------------- export
-M.compile = compile
-M.from_array = from_array
-M.from_source = from_source
-M.register_from_source = register_from_source
-M.register_to_source = register_to_source
+M.compile = compile -- lua-chunk -> program
+M.from_array = from_array -- bushfire-array -> program
+M.from_source = abolished('from_source')
+M.from_seed = from_seed -- seed -> program
+M.register_from_source = abolished('register_from_source')
+M.register_to_source = abolished('register_to_source')
 return M
 -- EOF

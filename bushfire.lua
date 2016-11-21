@@ -50,24 +50,9 @@ local function use_quick(value)
     p._enter_local_nq
 end
 
-local proc_from_source = {}
-
-local function register_from_source(lang, proc)
-  proc_from_source[lang] = proc
-end
-
-local function parse(lang, source)
-  local proc = proc_from_source[lang]
-  if proc == nil then
-    error("unknown language '"..lang.."'")
-  end
-  return proc(source)
-end
-
 local function parse_grass(source)
   return M.mower.parse(source)
 end
-register_from_source('grass', parse_grass)
 
 local function run_array(list)
   local sys = sys.new(list)
@@ -76,12 +61,14 @@ local function run_array(list)
   return ret
 end
 
-local function run(lang, source)
-  return run_array(parse(lang, source))
-end
-
 local function run_grass(source)
   return run_array(M.mower.parse(source))
+end
+
+local function abolished(name)
+  return function()
+    error("function '"..name.."' is abolisehd")
+  end
 end
 
 ---------------------------------------- inner class 'sys'
@@ -506,11 +493,11 @@ use_quick(true)
 M.use_debug = use_debug
 M.use_stat = use_stat
 M.use_quick = use_quick
-M.register_from_source = register_from_source
-M.parse = parse
+M.register_from_source = abolished('register_from_source')
+M.parse = abolished('parse')
 M.parse_grass = parse_grass
 M.run_array = run_array
-M.run = run
+M.run =  abolished('run')
 M.run_grass = run_grass
 M.gio_std = gio_std
 M.gio = gio_std
