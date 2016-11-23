@@ -48,45 +48,59 @@ Usage
 The invocatoin `grasstor -h` shows you the brief descrition
 of usage as follows:
 
-    This is grassator, vv0.2.1<2011/12/09> by ZR(T.Yato)
+    This is grassator, v1.0.0<2016/11/23> by ZR(T.Yato)
     Usage:
     (as interpreter)
-      grassator [-f LANG] [-d] [-s] [INFILE]
+      grassator [-f LANG] [-d] [-s] [-S] [INFILE]
     (as converter)
-      grassator [-f LANG] -t LANG [-d] [INFILE [OUTFILE]]
+      grassator [-f LANG] -t LANG [-d] [-S] [INFILE [OUTFILE]]
     Options:
       -f lang    Input language name. The default value is 'grass' (in
                  interpreter mode) or 'seed' (in converter mode).
       -t lang    Output language name.
       -d         Enable debug mode.
       -s         Enable stat mode.
+      -S         Assume program source is in SJIS instead of UTF-8
       infile     Input file name (default=stdin).
       outfile    Output file name (default=stdout).
     Supported languages:
-      seed (only input) / grass / homuhomu
+      seed / grass / homuhomu / snowman / zundoko / expandafter
+      ('seed' can be used only as input)
 
 Here shows some examples of command line input.
 
   * To execute a program in the Grass language:
+
         grassator program.www
+
     (Note that `-f grass` is omitted as default.)
 
   * To execute a program in the "seed" language:
+
         grassator -f seed program.sd
 
   * To execute a program in Grass, with debug messages:
+
         grassator -d program.www
+
     (The debug messages go to stderr.)
 
   * To convert a program from "seed" to Grass:
+
         grassator -t grass program.sd program.www
 
   * To convert from "seed" to Grass, run as filter:
+
         grassator -t grass
 
   * To convert a program from Grass to Homuhomu:
+
         grassator -f grass -t homuhomu program.www program.homu
 
+License
+-------
+
+This software is distributed under the MIT License.
 
 ---
 
