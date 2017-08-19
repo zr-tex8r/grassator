@@ -309,6 +309,10 @@ register_language('snowman', grassoid, {
     v = "\226\155\135", -- BLACK SNOWMAN
   }, nil)
 
+register_language('duck', homuoid,
+  '\240\159\166\134', -- DUCK
+  nil)
+
 local kysu = "\227\130\173\227\131\187\227\131\168"..
     "\227\131\187\227\130\183\239\188\129"
 local kyss = "\131\076\129\069\131\136\129\069\131\086\129\073"
