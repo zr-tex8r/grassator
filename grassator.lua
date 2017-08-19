@@ -3,8 +3,8 @@
 -- grassator.lua
 --
 local prog_name = "grassator"
-local version = "1.0.0"
-local mod_date = "2016/11/23"
+local version = "1.1.0"
+local mod_date = "2017/08/20"
 local author = "ZR(T.Yato)"
 package.path = arg[0]:gsub("[%.%w]+$", "?.lua;")..package.path
 planter = require 'planter'

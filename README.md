@@ -48,7 +48,7 @@ Usage
 The invocatoin `grasstor -h` shows you the brief descrition
 of usage as follows:
 
-    This is grassator, v1.0.0<2016/11/23> by ZR(T.Yato)
+    This is grassator, v1.1.0<2017/08/20> by ZR(T.Yato)
     Usage:
     (as interpreter)
       grassator [-f LANG] [-d] [-s] [-S] [INFILE]
@@ -64,7 +64,7 @@ of usage as follows:
       infile     Input file name (default=stdin).
       outfile    Output file name (default=stdout).
     Supported languages:
-      seed / grass / homuhomu / snowman / zundoko / expandafter
+      seed / grass / homuhomu / snowman / duck / zundoko / expandafter
       ('seed' can be used only as input)
 
 Here shows some examples of command line input.
